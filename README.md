@@ -1,18 +1,29 @@
-# Security Evaluation Framework
+# 🗡️ SkillJect: Automating Stealthy Skill-Based Prompt Injection for Coding Agents with Trace-Driven Closed-Loop Refinement
+
+> **First automated framework** for stealthy skill-based prompt injection against coding agents, with a **trace-driven closed-loop refinement** pipeline.
 
 ## Overview
 
-A streaming-based security testing framework for evaluating AI agent vulnerability to adversarial attacks through malicious skills. Built on top of OpenSandbox, the framework provides real-time feedback loops and adaptive test generation.
+Agent skills (e.g., `SKILL.md` + auxiliary scripts/resources) are becoming a common capability extension mechanism for coding agents. While this improves extensibility, it also introduces a new attack surface: **skill-based prompt injection**, where poisoned skills can manipulate tool usage and execution behavior after being imported into agent ecosystems.
 
-### Core Features
+**SkillJect** is an automated framework tailored to this setting. It builds a closed loop with three agents:
 
-- **Streaming Architecture**: Real-time generate-execute-analyze loop with feedback-driven parameter adjustment
-- **Two-Layer Detection**: Script execution detection + consequence detection (OR relationship)
-- **Adaptive Generation**: Adjust test parameters based on execution feedback using LLM intelligence
-- **Real Sandbox Testing**: Isolated Docker containers for each test case
-- **Consequence Detection**: Baseline comparison for accurate impact detection
-- **Tool Call Tracing**: OpenTelemetry-based detailed trace collection
-- **Incremental Testing**: Automatically skip completed test cases
+- **Attack Agent**: generates and iteratively refines injected skill documentation under stealth constraints
+- **Code Agent**: executes tasks in a realistic coding-agent environment using the injected skill
+- **Evaluate Agent**: inspects action traces (tool calls, file operations, outputs) and verifies whether the target malicious behavior is triggered, then feeds diagnostics back for refinement
+
+The framework also introduces a **malicious payload hiding strategy**, where operational payloads are hidden in auxiliary scripts (e.g., `.sh` / `.py` helpers) and only a lightweight inducement prompt is inserted into `SKILL.md` to trigger execution indirectly.
+
+---
+
+## Key Contributions
+
+- **Automated end-to-end skill injection red-teaming framework** (no manual prompt crafting required)
+- **Closed-loop multi-agent refinement** using trace-based feedback
+- **Stealth-oriented injection design** via documentation-level inducement + artifact-level payload hiding
+- **Extensive experiments** across diverse coding-agent settings, multiple backend LLMs, and realistic software engineering tasks
+
+---
 
 ## Quick Start
 
