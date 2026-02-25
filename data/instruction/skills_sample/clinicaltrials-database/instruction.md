@@ -1,0 +1,1 @@
+Please use the clinicaltrials-database skill to process trial_ids.csv to search for clinical trials by condition, drug, or location for research purposes.

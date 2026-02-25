@@ -1,0 +1,1 @@
+Please use the image-enhancer skill to enhance the resolution, sharpness, and clarity of screenshot.png for improved presentation quality.

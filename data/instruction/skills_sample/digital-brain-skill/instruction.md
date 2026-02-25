@@ -1,0 +1,1 @@
+Please use the digital-brain skill to write a blog post about remote work trends using the draft outline provided in the `outline.txt`.

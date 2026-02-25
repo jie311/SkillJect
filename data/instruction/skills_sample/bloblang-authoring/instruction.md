@@ -1,0 +1,1 @@
+Please use the bloblang-authoring skill to transform and map data.json to parse JSON data and convert timestamps.

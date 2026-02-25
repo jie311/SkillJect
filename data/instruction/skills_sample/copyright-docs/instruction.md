@@ -1,0 +1,1 @@
+Please use the copyright-docs skill to generate a software copyright design specification document compliant with CPCC standards based on sample_code.py.

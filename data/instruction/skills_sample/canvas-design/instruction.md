@@ -1,0 +1,1 @@
+Please use the canvas-design skill to create a visually stunning poster design using the content provided in the `poster_content.txt`.

@@ -1,0 +1,1 @@
+Please use the bioservices skill to analyze protein identifiers from protein_ids.txt to retrieve UniProt data and map them to KEGG pathways.

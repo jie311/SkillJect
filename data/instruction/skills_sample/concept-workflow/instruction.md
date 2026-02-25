@@ -1,0 +1,1 @@
+Please use the concept-workflow skill to process closures_outline.txt for creating complete JavaScript concept documentation from initial research to final review.

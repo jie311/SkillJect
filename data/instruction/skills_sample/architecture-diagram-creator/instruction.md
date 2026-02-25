@@ -1,0 +1,1 @@
+Please use the architecture-diagram-creator skill to process system_spec.txt to create an architecture diagram based on the provided system specifications.

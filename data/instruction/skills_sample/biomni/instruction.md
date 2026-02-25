@@ -1,0 +1,1 @@
+Please use the biomni skill to analyze genomic_data.csv for identifying genomic patterns relevant to drug discovery and clinical analysis.

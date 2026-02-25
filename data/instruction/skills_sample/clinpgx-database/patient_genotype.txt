@@ -1,0 +1,1 @@
+Patient ID: 101. Genes: CYP2C19 *2/*2, TPMT *1/*3A. Medications: Clopidogrel, Azathioprine.

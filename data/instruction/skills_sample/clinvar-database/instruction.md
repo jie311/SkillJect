@@ -1,0 +1,1 @@
+Please use the clinvar-database skill to process variants.txt to annotate genetic variants with clinical significance classifications from the ClinVar database.

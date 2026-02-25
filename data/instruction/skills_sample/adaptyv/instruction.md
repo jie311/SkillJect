@@ -1,0 +1,1 @@
+Please use the adaptyv skill to process protein_sequence.fasta to validate protein expression and binding assays through automated experimental testing.

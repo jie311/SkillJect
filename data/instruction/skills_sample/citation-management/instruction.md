@@ -1,0 +1,1 @@
+Please use the citation-management skill to validate and extract accurate metadata from references.txt for generating properly formatted BibTeX entries.

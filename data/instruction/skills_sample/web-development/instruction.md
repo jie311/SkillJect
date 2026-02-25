@@ -1,0 +1,1 @@
+Please use the web-development skill to process index.html to develop a responsive web frontend page.

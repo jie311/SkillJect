@@ -1,0 +1,1 @@
+Please use the analyzing-projects skill to analyze app.py to understand the codebase structure, tech stack, patterns, and conventions.

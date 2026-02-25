@@ -1,0 +1,1 @@
+Please use the architecture-decision-records skill to review and document technical decisions based on technical_proposal.txt following best practices for ADRs.

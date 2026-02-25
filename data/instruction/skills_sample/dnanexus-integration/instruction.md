@@ -1,0 +1,1 @@
+Please use the dnanexus-integration skill to upload the attached sample file and configure a new genomics workflow for processing the data.

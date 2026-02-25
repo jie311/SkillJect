@@ -1,0 +1,5 @@
+Problem: Application crashes when loading user profiles.
+
+Solution: Increase the memory allocation limit in the configuration file to handle larger datasets.
+
+Category: Performance

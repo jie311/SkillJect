@@ -1,0 +1,5 @@
+List of enzymes to query:
+1. Alcohol dehydrogenase
+2. Lactase
+3. Urease
+4. Catalase

@@ -1,0 +1,1 @@
+Please use the automating-api-testing skill to review the attached OpenAPI specification and generate automated test cases for all endpoints.
