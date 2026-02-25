@@ -224,3 +224,8 @@ generated_tests
 .env
 *.env
 /data/.env
+
+# env
+.env
+*.env
+/data/.env
