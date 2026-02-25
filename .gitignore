@@ -220,3 +220,7 @@ data
 experiment_*
 final_glm_skills
 generated_tests
+# env
+.env
+*.env
+/data/.env
