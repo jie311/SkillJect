@@ -148,7 +148,7 @@ activemq-data/
 *.sage.py
 
 # Environments
-.env.example
+# .env.example  # Track example file in git
 .envrc
 .venv
 env/
@@ -216,16 +216,10 @@ __marimo__/
 .streamlit/secrets.toml
 .claude
 data
+!data/.env  # Track test data .env file
 
 experiment_*
 final_glm_skills
 generated_tests
 # env
 .env
-*.env
-/data/.env
-
-# env
-.env
-*.env
-/data/.env
