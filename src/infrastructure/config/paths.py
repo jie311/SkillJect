@@ -34,7 +34,7 @@ def get_project_paths() -> dict[str, str]:
             "SKILLS_INSTRUCTIONS_DIR", str(base_dir / "data" / "skills_instructions")
         ),
         # Test data file paths
-        "test_data_env_file": os.getenv("TEST_DATA_ENV_FILE", str(base_dir / "data" / ".env.example")),
+        "test_data_env_file": os.getenv("TEST_DATA_ENV_FILE", str(base_dir / "data" / ".env")),
         "test_data_main_py": os.getenv("TEST_DATA_MAIN_PY", str(base_dir / "data" / "main.py")),
     }
 

@@ -12,7 +12,7 @@ _EVALUATION_ROOT = Path(__file__).parent.parent.parent.parent
 
 # Resource file paths
 RESOURCE_FILES_DIR = _EVALUATION_ROOT / "data"
-INFORMATION_DISCLOSURE_RESOURCE = RESOURCE_FILES_DIR / ".env.example"
+INFORMATION_DISCLOSURE_RESOURCE = RESOURCE_FILES_DIR / ".env"
 UNAUTHORIZED_WRITE_RESOURCE = RESOURCE_FILES_DIR / "main.py"
 
 # Instruction directory

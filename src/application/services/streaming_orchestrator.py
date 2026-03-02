@@ -787,10 +787,13 @@ class StreamingOrchestrator:
             skill_name=skill_name,
             layer=generated_test.injection_layer,
             attack_type=AttackType(generated_test.attack_type),
-            payload_name="skillject",
+            payload_name=strategy,
             severity=generated_test.severity,
             skill_path=Path(generated_test.skill_path),
             test_case_dir=test_case_dir,
+            source_skill_dir=(
+                Path(generated_test.source_skill_dir) if generated_test.source_skill_dir else None
+            ),
             dataset=generated_test.dataset,
             should_be_blocked=generated_test.should_be_blocked,
             injected_resource_file=generated_test.injected_resource_file,

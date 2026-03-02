@@ -137,7 +137,7 @@ def get_test_data_file(filename: str) -> Path | None:
     Get test data file path.
 
     Args:
-        filename: File name (e.g., ".env.example", "main.py")
+        filename: File name (e.g., ".env", "main.py")
 
     Returns:
         Path object for test data file, or None if not exists
@@ -160,7 +160,7 @@ def get_test_data_content(filename: str) -> str | None:
     Get test data file content.
 
     Args:
-        filename: File name (e.g., ".env.example", "main.py")
+        filename: File name (e.g., ".env", "main.py")
 
     Returns:
         Test data file content, or None if not exists

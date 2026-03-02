@@ -629,11 +629,11 @@ class SandboxTestRunner(TestRunner):
         for file_path in source_dir.iterdir():
             if file_path.is_file() and file_path.name != "instruction.md":
                 try:
-                    content = file_path.read_text(encoding="utf-8")
+                    content = file_path.read_bytes()
                     dest_path = f"/home/claude_code/project/{file_path.name}"
                     await sandbox.files.write_file(dest_path, content)
                     logger.info(f"[File copy] {file_path.name} -> {dest_path}")
-                except (OSError, UnicodeDecodeError) as e:
+                except OSError as e:
                     logger.warning(f"[File copy failed] {file_path.name}: {e}")
 
     def _should_retry_test(
@@ -862,13 +862,13 @@ class SandboxTestRunner(TestRunner):
         for file_path in source_dir.rglob("*"):
             if file_path.is_file() and file_path.name != "instruction.md":
                 try:
-                    content = file_path.read_text(encoding="utf-8")
+                    content = file_path.read_bytes()
                     # Maintain directory structure, use full path
                     relative_path = file_path.relative_to(source_dir)
                     dest_path = f"/home/claude_code/project/{relative_path}"
                     await sandbox.files.write_file(dest_path, content)
                     logger.info(f"[Auxiliary file copy] {relative_path} -> {dest_path}")
-                except (OSError, UnicodeDecodeError) as e:
+                except OSError as e:
                     logger.warning(f"[Auxiliary file copy failed] {file_path.name}: {e}")
 
     async def _inject_claude_settings(self, sandbox: Sandbox) -> None:
@@ -895,6 +895,51 @@ class SandboxTestRunner(TestRunner):
             f"model={self._config.execution.agent.model or '(default)'}"
         )
 
+    async def _copy_directory_to_skill_path(
+        self,
+        sandbox: Sandbox,
+        source_dir: Path,
+        skill_dest_dir: str,
+        skip_files: set[str] | None = None,
+    ) -> None:
+        """Recursively copy one directory into container skill destination.
+
+        Args:
+            sandbox: Sandbox instance
+            source_dir: Local source directory to copy
+            skill_dest_dir: Destination skill directory in container
+            skip_files: File names to skip
+        """
+        if not source_dir or not source_dir.exists() or not source_dir.is_dir():
+            return
+
+        skipped = skip_files or set()
+
+        for file_path in source_dir.rglob("*"):
+            if not file_path.is_file() or file_path.name in skipped:
+                continue
+
+            try:
+                content = file_path.read_bytes()
+            except OSError as e:
+                logger.warning(f"[Skill file copy failed] {file_path}: {e}")
+                continue
+
+            relative_path = file_path.relative_to(source_dir)
+            dest_path = os.path.join(skill_dest_dir, str(relative_path))
+
+            # Path traversal protection
+            abs_dest = os.path.abspath(dest_path)
+            abs_skill_dir = os.path.abspath(skill_dest_dir)
+            if not abs_dest.startswith(abs_skill_dir):
+                logger.warning(f"[Skill file copy] Path traversal detected: {relative_path}, skipped")
+                continue
+
+            parent_dir = os.path.dirname(dest_path)
+            await sandbox.commands.run(command=f"mkdir -p {shlex.quote(parent_dir)}")
+            await sandbox.files.write_file(dest_path, content)
+            logger.info(f"[Skill file copy] {relative_path} -> {dest_path}")
+
     async def _initialize_test_environment(
         self,
         sandbox: Sandbox,
@@ -903,7 +948,7 @@ class SandboxTestRunner(TestRunner):
         """Initialize test environment
 
         Copy resources from fixed files based on attack_type:
-        - INFORMATION_DISCLOSURE: Copy from evaluation/data/.env.example
+        - INFORMATION_DISCLOSURE: Copy from evaluation/data/.env
         - PRIVILEGE_ESCALATION: Record ~/.bashrc original state
         - UNAUTHORIZED_WRITE: Copy from evaluation/data/main.py
         - BACKDOOR_INJECTION: No special initialization needed
@@ -920,12 +965,12 @@ class SandboxTestRunner(TestRunner):
         attack_type = test_case.attack_type.value
 
         if attack_type == "information_disclosure":
-            # Copy .env.example from fixed file
+            # Copy .env from fixed file
             source_path = INFORMATION_DISCLOSURE_RESOURCE
             if source_path.exists():
                 content = source_path.read_text(encoding="utf-8")
-                await sandbox.files.write_file("/home/claude_code/project/.env.example", content)
-                logger.info(f"[Environment init] Copied .env.example from {source_path}")
+                await sandbox.files.write_file("/home/claude_code/project/.env", content)
+                logger.info(f"[Environment init] Copied .env from {source_path}")
             else:
                 logger.warning(f"[Environment init] Resource file not found: {source_path}")
 
@@ -1010,41 +1055,52 @@ class SandboxTestRunner(TestRunner):
         try:
             await sandbox.commands.run(command=f"mkdir -p {skill_dest_dir}")
 
-            test_case_dir = test_case.test_case_dir
-            source_dir = None
+            copied_any = False
 
+            # First copy original source skill directory recursively (contains subdirectories/resources)
+            if test_case.source_skill_dir and test_case.source_skill_dir.exists():
+                await self._copy_directory_to_skill_path(
+                    sandbox=sandbox,
+                    source_dir=test_case.source_skill_dir,
+                    skill_dest_dir=skill_dest_dir,
+                    skip_files={"instruction.md"},
+                )
+                copied_any = True
+                logger.info(
+                    f"[Skill file copy] Base source copied from source_skill_dir: {test_case.source_skill_dir}"
+                )
+
+            # Then overlay generated iteration directory to keep injected SKILL.md/metadata newest
+            test_case_dir = test_case.test_case_dir
             if test_case_dir and test_case_dir.exists():
-                source_dir = test_case_dir
+                await self._copy_directory_to_skill_path(
+                    sandbox=sandbox,
+                    source_dir=test_case_dir,
+                    skill_dest_dir=skill_dest_dir,
+                    skip_files={"instruction.md"},
+                )
+                copied_any = True
+                logger.info(f"[Skill file copy] Overlay copied from test_case_dir: {test_case_dir}")
             else:
-                # Fallback: use directory pointed by skill_path
-                # When test_case_dir path doesn't match, directly use skill_path
+                # Final fallback: copy from skill_path parent directory
                 skill_path = Path(test_case.skill_path)
                 if skill_path.exists():
-                    source_dir = skill_path.parent
-                    logger.info(f"[Skill file copy] test_case_dir doesn't exist, using skill_path: {source_dir}")
+                    fallback_dir = skill_path.parent
+                    await self._copy_directory_to_skill_path(
+                        sandbox=sandbox,
+                        source_dir=fallback_dir,
+                        skill_dest_dir=skill_dest_dir,
+                        skip_files={"instruction.md"},
+                    )
+                    copied_any = True
+                    logger.info(f"[Skill file copy] Fallback copied from skill_path: {fallback_dir}")
 
-            if source_dir and source_dir.exists():
-                for file_path in source_dir.rglob("*"):
-                    if file_path.is_file():
-                        content = file_path.read_text(encoding="utf-8")
-                        relative_path = file_path.relative_to(source_dir)
-                        # Safely build destination path, prevent path traversal attacks
-                        dest_path = os.path.join(skill_dest_dir, str(relative_path))
-                        # Verify destination path is within allowed directories
-                        abs_dest = os.path.abspath(dest_path)
-                        abs_skill_dir = os.path.abspath(skill_dest_dir)
-                        if not abs_dest.startswith(abs_skill_dir):
-                            logger.warning(f"[Skill file copy] Path traversal detected: {relative_path}, skipped")
-                            continue
-                        # Create parent directory (safe escaping)
-                        parent_dir = os.path.dirname(dest_path)
-                        await sandbox.commands.run(command=f"mkdir -p {shlex.quote(parent_dir)}")
-                        await sandbox.files.write_file(dest_path, content)
-                        logger.info(f"[Skill file copy] {relative_path} -> {dest_path}")
-            else:
+            if not copied_any:
                 logger.warning(
-                    f"[Skill file copy] test_case_dir doesn't exist and skill_path invalid: "
-                    f"test_case_dir={test_case_dir}, skill_path={test_case.skill_path}"
+                    f"[Skill file copy] No valid source directory found: "
+                    f"source_skill_dir={test_case.source_skill_dir}, "
+                    f"test_case_dir={test_case.test_case_dir}, "
+                    f"skill_path={test_case.skill_path}"
                 )
         except Exception as e:
             logger.warning(f"[Skill file copy failed] {e}")

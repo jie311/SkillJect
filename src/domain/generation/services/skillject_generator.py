@@ -191,6 +191,7 @@ class SkilljectGenerator(TestGenerationStrategy):
                         "skill_name": skill_name,
                         "injection_layer": "instruction_resource",  # instruction + resource dual-layer injection
                         "injection_method": "skillject",
+                        "strategy": self.config.strategy.value,
                         "provider": self._provider,
                         "model": self._model,
                         "script_file": str(script_path),
@@ -692,15 +693,18 @@ class SkilljectGenerator(TestGenerationStrategy):
         if source_skill_dir_str:
             source_skill_dir = Path(source_skill_dir_str)
             if source_skill_dir.exists() and source_skill_dir.is_dir():
-                excluded_files = {"instruction.md", "SKILL.md", ".gitkeep"}
-                for file_path in source_skill_dir.iterdir():
-                    if file_path.is_file() and file_path.name not in excluded_files:
-                        dest_file = test_dir / file_path.name
+                excluded_files = {"instruction.md", "SKILL.md"}
+                # Recursively copy all files and directories (except excluded files)
+                for item in source_skill_dir.rglob("*"):
+                    if item.is_file() and item.name not in excluded_files:
+                        relative_path = item.relative_to(source_skill_dir)
+                        dest_file = test_dir / relative_path
+                        dest_file.parent.mkdir(parents=True, exist_ok=True)
                         try:
-                            shutil.copy(file_path, dest_file)
-                            logger.debug(f"[Copy auxiliary files] {file_path.name} -> {test_dir.name}")
+                            shutil.copy(item, dest_file)
+                            logger.debug(f"[Copy auxiliary files] {relative_path} -> {test_dir.name}")
                         except Exception as e:
-                            logger.warning(f"[Copy auxiliary files failed] {file_path.name}: {e}")
+                            logger.warning(f"[Copy auxiliary files failed] {relative_path}: {e}")
 
         # Write fused SKILL.md
         output_file = test_dir / "SKILL.md"
@@ -860,6 +864,7 @@ class SkilljectGenerator(TestGenerationStrategy):
             "skill_name": skill_name,
             "injection_layer": "instruction_resource",  # instruction + resource dual-layer injection
             "injection_method": "skillject",
+            "strategy": self.config.strategy.value,
             "provider": self._provider,
             "model": self._model,
             "script_file": str(script_path),
@@ -906,14 +911,17 @@ class SkilljectGenerator(TestGenerationStrategy):
         # Copy auxiliary files from original skill directory (exclude instruction.md and SKILL.md)
         excluded_files = {"instruction.md", "SKILL.md", ".gitkeep"}
         if skill_file.parent.exists() and skill_file.parent.is_dir():
-            for file_path in skill_file.parent.iterdir():
-                if file_path.is_file() and file_path.name not in excluded_files:
-                    dest_file = test_dir / file_path.name
+            # Recursively copy all files and directories (except excluded files)
+            for item in skill_file.parent.rglob("*"):
+                if item.is_file() and item.name not in excluded_files:
+                    relative_path = item.relative_to(skill_file.parent)
+                    dest_file = test_dir / relative_path
+                    dest_file.parent.mkdir(parents=True, exist_ok=True)
                     try:
-                        shutil.copy(file_path, dest_file)
-                        logger.debug(f"[Copy auxiliary files] {file_path.name} -> {test_dir.name}")
+                        shutil.copy(item, dest_file)
+                        logger.debug(f"[Copy auxiliary files] {relative_path} -> {test_dir.name}")
                     except Exception as e:
-                        logger.warning(f"[Copy auxiliary files failed] {file_path.name}: {e}")
+                        logger.warning(f"[Copy auxiliary files failed] {relative_path}: {e}")
 
         # Write fused SKILL.md
         output_file = test_dir / "SKILL.md"
@@ -1107,14 +1115,17 @@ class SkilljectGenerator(TestGenerationStrategy):
         # Copy auxiliary files from original skill directory (exclude instruction.md and SKILL.md)
         excluded_files = {"instruction.md", "SKILL.md", ".gitkeep"}
         if skill_file.parent.exists() and skill_file.parent.is_dir():
-            for file_path in skill_file.parent.iterdir():
-                if file_path.is_file() and file_path.name not in excluded_files:
-                    dest_file = test_dir / file_path.name
+            # Recursively copy all files and directories (except excluded files)
+            for item in skill_file.parent.rglob("*"):
+                if item.is_file() and item.name not in excluded_files:
+                    relative_path = item.relative_to(skill_file.parent)
+                    dest_file = test_dir / relative_path
+                    dest_file.parent.mkdir(parents=True, exist_ok=True)
                     try:
-                        shutil.copy(file_path, dest_file)
-                        logger.debug(f"[Copy auxiliary files] {file_path.name} -> {test_dir.name}")
+                        shutil.copy(item, dest_file)
+                        logger.debug(f"[Copy auxiliary files] {relative_path} -> {test_dir.name}")
                     except Exception as e:
-                        logger.warning(f"[Copy auxiliary files failed] {file_path.name}: {e}")
+                        logger.warning(f"[Copy auxiliary files failed] {relative_path}: {e}")
 
         # Write fused SKILL.md (before creating GeneratedTestCase)
         output_file = test_dir / "SKILL.md"
@@ -1144,6 +1155,7 @@ class SkilljectGenerator(TestGenerationStrategy):
             "skill_name": skill_name,
             "injection_layer": "instruction_resource",
             "injection_method": "skillject_adaptive",
+            "strategy": self.config.strategy.value,
             "provider": self._provider,
             "model": self._model,
             "script_file": str(script_path),
@@ -1385,7 +1397,7 @@ class SkilljectGenerator(TestGenerationStrategy):
 **Description:** {skill_description}
 
 ## Current Content (Previous Iteration)
-{previous_content[:1000]}
+{previous_content}
 
 ## Script Resource
 The skill has access to a helper script: `{script_path}`
